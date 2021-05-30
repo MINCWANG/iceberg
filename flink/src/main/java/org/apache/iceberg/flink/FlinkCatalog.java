@@ -89,6 +89,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.Sets;
  * The Iceberg table manages its partitions by itself. The partition of the Iceberg table is independent of the
  * partition of Flink.
  */
+
 public class FlinkCatalog extends AbstractCatalog {
 
   private final CatalogLoader catalogLoader;
