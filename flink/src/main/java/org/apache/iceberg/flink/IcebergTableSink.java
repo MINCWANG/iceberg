@@ -21,8 +21,6 @@ package org.apache.iceberg.flink;
 
 import java.util.List;
 import java.util.Map;
-
-import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.api.constraints.UniqueConstraint;
