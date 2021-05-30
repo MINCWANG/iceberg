@@ -27,7 +27,7 @@ import org.apache.flink.api.common.state.CheckpointListener;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 
 /**
- * A stream source that:
+ * A stream source that:1
  * 1) emits the elements from elementsPerCheckpoint.get(0) without allowing checkpoints.
  * 2) then waits for the checkpoint to complete.
  * 3) emits the elements from elementsPerCheckpoint.get(1) without allowing checkpoints.
