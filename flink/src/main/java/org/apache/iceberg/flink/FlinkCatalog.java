@@ -378,7 +378,6 @@ public class FlinkCatalog extends AbstractCatalog {
     }
 
     try {
-      TABLE_WRITE_ICEBERG_V2_FORMAT_ENABLE
       Table resTable = icebergCatalog.createTable(
               toIdentifier(tablePath),
               icebergSchema,
