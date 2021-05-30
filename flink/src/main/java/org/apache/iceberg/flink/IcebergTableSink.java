@@ -21,6 +21,9 @@ package org.apache.iceberg.flink;
 
 import java.util.List;
 import java.util.Map;
+
+import org.apache.flink.configuration.Configuration;
+import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.api.constraints.UniqueConstraint;
 import org.apache.flink.table.connector.ChangelogMode;
@@ -36,6 +39,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 public class IcebergTableSink implements DynamicTableSink, SupportsPartitioning, SupportsOverwrite {
   private final TableLoader tableLoader;
   private final TableSchema tableSchema;
+  private final ReadableConfig readableConfig;
 
   private boolean overwrite = false;
 
@@ -43,11 +47,13 @@ public class IcebergTableSink implements DynamicTableSink, SupportsPartitioning,
     this.tableLoader = toCopy.tableLoader;
     this.tableSchema = toCopy.tableSchema;
     this.overwrite = toCopy.overwrite;
+    this.readableConfig = toCopy.readableConfig;
   }
 
-  public IcebergTableSink(TableLoader tableLoader, TableSchema tableSchema) {
+  public IcebergTableSink(TableLoader tableLoader, TableSchema tableSchema, ReadableConfig readableConfig) {
     this.tableLoader = tableLoader;
     this.tableSchema = tableSchema;
+    this.readableConfig = readableConfig;
   }
 
   @Override
@@ -64,6 +70,7 @@ public class IcebergTableSink implements DynamicTableSink, SupportsPartitioning,
         .tableSchema(tableSchema)
         .equalityFieldColumns(equalityColumns)
         .overwrite(overwrite)
+        .upsert(readableConfig.get(FlinkTableOptions.TABLE_WRITE_ICEBERG_UPSERT_ENABLE))
         .build();
   }
 

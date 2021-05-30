@@ -52,6 +52,7 @@ import org.apache.flink.table.catalog.stats.CatalogTableStatistics;
 import org.apache.flink.table.expressions.Expression;
 import org.apache.flink.table.factories.Factory;
 import org.apache.flink.util.StringUtils;
+import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.CachingCatalog;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.FileScanTask;
@@ -60,6 +61,8 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.TableMetadata;
+import org.apache.iceberg.TableOperations;
 import org.apache.iceberg.Transaction;
 import org.apache.iceberg.UpdateProperties;
 import org.apache.iceberg.catalog.Catalog;
@@ -76,7 +79,6 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
-
 /**
  * A Flink Catalog implementation that wraps an Iceberg {@link Catalog}.
  * <p>
@@ -376,12 +378,16 @@ public class FlinkCatalog extends AbstractCatalog {
     }
 
     try {
-      icebergCatalog.createTable(
-          toIdentifier(tablePath),
-          icebergSchema,
-          spec,
-          location,
-          properties.build());
+      TABLE_WRITE_ICEBERG_V2_FORMAT_ENABLE
+      Table resTable = icebergCatalog.createTable(
+              toIdentifier(tablePath),
+              icebergSchema,
+              spec,
+              location,
+              properties.build());
+      TableOperations ops = ((BaseTable) resTable).operations();
+      TableMetadata meta = ops.current();
+      ops.commit(meta, meta.upgradeToFormatVersion(2));
     } catch (AlreadyExistsException e) {
       if (!ignoreIfExists) {
         throw new TableAlreadyExistException(getName(), tablePath, e);
