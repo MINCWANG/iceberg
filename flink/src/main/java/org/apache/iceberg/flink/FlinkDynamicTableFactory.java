@@ -50,7 +50,7 @@ public class FlinkDynamicTableFactory implements DynamicTableSinkFactory, Dynami
     ObjectPath objectPath = context.getObjectIdentifier().toObjectPath();
     TableLoader tableLoader = createTableLoader(objectPath);
     TableSchema tableSchema = TableSchemaUtils.getPhysicalSchema(context.getCatalogTable().getSchema());
-    return new IcebergTableSink(tableLoader, tableSchema, context.getConfiguration());
+    return new IcebergTableSink(tableLoader, tableSchema, context.getCatalogTable().getOptions(), context.getConfiguration());
   }
 
   @Override

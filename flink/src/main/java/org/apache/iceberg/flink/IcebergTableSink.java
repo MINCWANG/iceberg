@@ -48,7 +48,7 @@ public class IcebergTableSink implements DynamicTableSink, SupportsPartitioning,
     this.readableConfig = toCopy.readableConfig;
   }
 
-  public IcebergTableSink(TableLoader tableLoader, TableSchema tableSchema, ReadableConfig readableConfig) {
+  public IcebergTableSink(TableLoader tableLoader, TableSchema tableSchema, Map<String, String> properties, ReadableConfig readableConfig) {
     this.tableLoader = tableLoader;
     this.tableSchema = tableSchema;
     this.readableConfig = readableConfig;
@@ -68,7 +68,7 @@ public class IcebergTableSink implements DynamicTableSink, SupportsPartitioning,
         .tableSchema(tableSchema)
         .equalityFieldColumns(equalityColumns)
         .overwrite(overwrite)
-        .upsert(readableConfig.get(FlinkTableOptions.TABLE_WRITE_ICEBERG_UPSERT_ENABLE))
+        .upsert(true)
         .build();
   }
 
