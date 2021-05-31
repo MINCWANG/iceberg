@@ -48,7 +48,8 @@ public class IcebergTableSink implements DynamicTableSink, SupportsPartitioning,
     this.readableConfig = toCopy.readableConfig;
   }
 
-  public IcebergTableSink(TableLoader tableLoader, TableSchema tableSchema, Map<String, String> properties, ReadableConfig readableConfig) {
+  public IcebergTableSink(TableLoader tableLoader, TableSchema tableSchema, Map<String, String> properties,
+                          ReadableConfig readableConfig) {
     this.tableLoader = tableLoader;
     this.tableSchema = tableSchema;
     this.readableConfig = readableConfig;
