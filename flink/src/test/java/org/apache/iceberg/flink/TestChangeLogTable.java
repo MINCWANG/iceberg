@@ -30,6 +30,7 @@ import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableOperations;
+import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.flink.source.BoundedTableFactory;
@@ -63,6 +64,10 @@ public class TestChangeLogTable extends ChangeLogTableTestBase {
 
   private final boolean partitioned;
 
+  public TestChangeLogTable(boolean partitioned) {
+    this.partitioned = partitioned;
+  }
+
   @Parameterized.Parameters(name = "PartitionedTable={0}")
   public static Iterable<Object[]> parameters() {
     return ImmutableList.of(
@@ -71,15 +76,19 @@ public class TestChangeLogTable extends ChangeLogTableTestBase {
     );
   }
 
-  public TestChangeLogTable(boolean partitioned) {
-    this.partitioned = partitioned;
-  }
-
   @BeforeClass
   public static void createWarehouse() throws IOException {
     File warehouseFile = TEMPORARY_FOLDER.newFolder();
     Assert.assertTrue("The warehouse should be deleted", warehouseFile.delete());
     warehouse = String.format("file:%s", warehouseFile);
+  }
+
+  private static StructLikeSet expectedRowSet(Table table, List<Record> records) {
+    return SimpleDataUtil.expectedRowSet(table, records.toArray(new Record[0]));
+  }
+
+  private static StructLikeSet actualRowSet(Table table, long snapshotId) throws IOException {
+    return SimpleDataUtil.actualRowSet(table, snapshotId, "*");
   }
 
   @Before
@@ -243,8 +252,9 @@ public class TestChangeLogTable extends ChangeLogTableTestBase {
 
   private Table createTable(String tableName, List<String> key, boolean isPartitioned) {
     String partitionByCause = isPartitioned ? "PARTITIONED BY (data)" : "";
-    sql("CREATE TABLE %s(id INT, data VARCHAR, PRIMARY KEY(%s) NOT ENFORCED) %s",
-        tableName, Joiner.on(',').join(key), partitionByCause);
+    sql("CREATE TABLE %s(id INT, data VARCHAR, PRIMARY KEY(%s) NOT ENFORCED) %s " +
+            "WITH ('%s'='true') ",
+        tableName, Joiner.on(',').join(key), partitionByCause, TableProperties.UPSERT_WRITE_ENABLED);
 
     // Upgrade the iceberg table to format v2.
     CatalogLoader loader = CatalogLoader.hadoop("my_catalog", CONF, ImmutableMap.of(
@@ -294,13 +304,5 @@ public class TestChangeLogTable extends ChangeLogTableTestBase {
       }
     }
     return validSnapshots;
-  }
-
-  private static StructLikeSet expectedRowSet(Table table, List<Record> records) {
-    return SimpleDataUtil.expectedRowSet(table, records.toArray(new Record[0]));
-  }
-
-  private static StructLikeSet actualRowSet(Table table, long snapshotId) throws IOException {
-    return SimpleDataUtil.actualRowSet(table, snapshotId, "*");
   }
 }
