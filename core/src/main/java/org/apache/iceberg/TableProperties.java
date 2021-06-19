@@ -167,6 +167,13 @@ public class TableProperties {
   public static final String WRITE_DISTRIBUTION_MODE_RANGE = "range";
   public static final String WRITE_DISTRIBUTION_MODE_DEFAULT = WRITE_DISTRIBUTION_MODE_NONE;
 
+  public static final String WRITE_FORMAT_VERSION = "write_format_version";
+  public static final String WRITE_FORMAT_VERSION_DEFAULT = "1";
+  public static final String WRITE_FORMAT_VERSION_2 = "2";
+
+  public static final String UPSERT_WRITE_ENABLED = "upsert_write_enabled";
+  public static final boolean UPSERT_WRITE_ENABLED_DEFAULT = false;
+
   public static final String GC_ENABLED = "gc.enabled";
   public static final boolean GC_ENABLED_DEFAULT = true;
 

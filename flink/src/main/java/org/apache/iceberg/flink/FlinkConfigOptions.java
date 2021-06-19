@@ -40,17 +40,4 @@ public class FlinkConfigOptions {
           .intType()
           .defaultValue(100)
           .withDescription("Sets max infer parallelism for source operator.");
-
-  public static final ConfigOption<Boolean> TABLE_WRITE_ICEBERG_V2_FORMAT_ENABLE =
-          ConfigOptions.key("table.write.iceberg.v2.format.enable")
-                  .booleanType()
-                  .defaultValue(false)
-                  .withDescription("If is true, iceberg write will support cdc mode.");
-
-  public static final ConfigOption<Boolean> TABLE_WRITE_ICEBERG_UPSERT_ENABLE =
-          ConfigOptions.key("table.write.iceberg.upsert.enable")
-                  .booleanType()
-                  .defaultValue(false)
-                  .withDescription("If is true, iceberg write mode will is upsert." +
-                          "The Transform all INSERT/UPDATE_AFTER to be UPSERT, which means DELETE + INSERT the key.");
 }
