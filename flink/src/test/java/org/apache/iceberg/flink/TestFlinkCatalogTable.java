@@ -217,7 +217,6 @@ public class TestFlinkCatalogTable extends FlinkCatalogTestBase {
     Assert.assertEquals("/tmp/location", table.location());
     Assert.assertEquals(Maps.newHashMap(), table.properties());
   }
-
   @Test
   public void testCreatePartitionTable() throws TableNotExistException {
     sql("CREATE TABLE tl(id BIGINT, dt STRING) PARTITIONED BY(dt)");
@@ -235,6 +234,27 @@ public class TestFlinkCatalogTable extends FlinkCatalogTestBase {
     Assert.assertEquals(
         TableSchema.builder().field("id", DataTypes.BIGINT()).field("dt", DataTypes.STRING()).build(),
         catalogTable.getSchema());
+    Assert.assertEquals(Maps.newHashMap(), catalogTable.getOptions());
+    Assert.assertEquals(Collections.singletonList("dt"), catalogTable.getPartitionKeys());
+  }
+
+  @Test
+  public void testCreateVersionTable() throws TableNotExistException {
+    sql("CREATE TABLE tl(id BIGINT, dt STRING) PARTITIONED BY(dt) WITH ('version.format'='2')");
+
+    Table table = table("tl");
+    Assert.assertEquals(
+            new Schema(
+                    Types.NestedField.optional(1, "id", Types.LongType.get()),
+                    Types.NestedField.optional(2, "dt", Types.StringType.get())).asStruct(),
+            table.schema().asStruct());
+    Assert.assertEquals(PartitionSpec.builderFor(table.schema()).identity("dt").build(), table.spec());
+    Assert.assertEquals(Maps.newHashMap(), table.properties());
+
+    CatalogTable catalogTable = catalogTable("tl");
+    Assert.assertEquals(
+            TableSchema.builder().field("id", DataTypes.BIGINT()).field("dt", DataTypes.STRING()).build(),
+            catalogTable.getSchema());
     Assert.assertEquals(Maps.newHashMap(), catalogTable.getOptions());
     Assert.assertEquals(Collections.singletonList("dt"), catalogTable.getPartitionKeys());
   }

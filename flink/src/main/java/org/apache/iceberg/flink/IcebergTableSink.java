@@ -21,7 +21,6 @@ package org.apache.iceberg.flink;
 
 import java.util.List;
 import java.util.Map;
-import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.api.constraints.UniqueConstraint;
 import org.apache.flink.table.connector.ChangelogMode;
@@ -31,13 +30,14 @@ import org.apache.flink.table.connector.sink.abilities.SupportsOverwrite;
 import org.apache.flink.table.connector.sink.abilities.SupportsPartitioning;
 import org.apache.flink.types.RowKind;
 import org.apache.flink.util.Preconditions;
+import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.flink.sink.FlinkSink;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 
 public class IcebergTableSink implements DynamicTableSink, SupportsPartitioning, SupportsOverwrite {
   private final TableLoader tableLoader;
   private final TableSchema tableSchema;
-  private final ReadableConfig readableConfig;
+  private final Map<String, String> properties;
 
   private boolean overwrite = false;
 
@@ -45,14 +45,13 @@ public class IcebergTableSink implements DynamicTableSink, SupportsPartitioning,
     this.tableLoader = toCopy.tableLoader;
     this.tableSchema = toCopy.tableSchema;
     this.overwrite = toCopy.overwrite;
-    this.readableConfig = toCopy.readableConfig;
+    this.properties = toCopy.properties;
   }
 
-  public IcebergTableSink(TableLoader tableLoader, TableSchema tableSchema, Map<String, String> properties,
-                          ReadableConfig readableConfig) {
+  public IcebergTableSink(TableLoader tableLoader, TableSchema tableSchema, Map<String, String> properties) {
     this.tableLoader = tableLoader;
     this.tableSchema = tableSchema;
-    this.readableConfig = readableConfig;
+    this.properties = properties;
   }
 
   @Override
@@ -63,13 +62,13 @@ public class IcebergTableSink implements DynamicTableSink, SupportsPartitioning,
     List<String> equalityColumns = tableSchema.getPrimaryKey()
         .map(UniqueConstraint::getColumns)
         .orElseGet(ImmutableList::of);
-
+    boolean upsert = Boolean.parseBoolean(properties.get(TableProperties.UPSERT_WRITE_ENABLED));
     return (DataStreamSinkProvider) dataStream -> FlinkSink.forRowData(dataStream)
         .tableLoader(tableLoader)
         .tableSchema(tableSchema)
         .equalityFieldColumns(equalityColumns)
         .overwrite(overwrite)
-        .upsert(true)
+        .upsert(upsert)
         .build();
   }
 
