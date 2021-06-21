@@ -62,7 +62,8 @@ public class IcebergTableSink implements DynamicTableSink, SupportsPartitioning,
     List<String> equalityColumns = tableSchema.getPrimaryKey()
         .map(UniqueConstraint::getColumns)
         .orElseGet(ImmutableList::of);
-    boolean upsert = Boolean.parseBoolean(properties.get(TableProperties.UPSERT_WRITE_ENABLED));
+    boolean upsert = Boolean.parseBoolean(properties.getOrDefault(TableProperties.WRITE_UPSERT_ENABLED,
+        String.valueOf(TableProperties.WRITE_UPSERT_ENABLED_DEFAULT)));
     return (DataStreamSinkProvider) dataStream -> FlinkSink.forRowData(dataStream)
         .tableLoader(tableLoader)
         .tableSchema(tableSchema)

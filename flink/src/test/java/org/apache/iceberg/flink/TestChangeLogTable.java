@@ -254,7 +254,7 @@ public class TestChangeLogTable extends ChangeLogTableTestBase {
     String partitionByCause = isPartitioned ? "PARTITIONED BY (data)" : "";
     sql("CREATE TABLE %s(id INT, data VARCHAR, PRIMARY KEY(%s) NOT ENFORCED) %s " +
             "WITH ('%s'='true') ",
-        tableName, Joiner.on(',').join(key), partitionByCause, TableProperties.UPSERT_WRITE_ENABLED);
+        tableName, Joiner.on(',').join(key), partitionByCause, TableProperties.WRITE_UPSERT_ENABLED);
 
     // Upgrade the iceberg table to format v2.
     CatalogLoader loader = CatalogLoader.hadoop("my_catalog", CONF, ImmutableMap.of(

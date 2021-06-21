@@ -44,6 +44,7 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
@@ -217,6 +218,7 @@ public class TestFlinkCatalogTable extends FlinkCatalogTestBase {
     Assert.assertEquals("/tmp/location", table.location());
     Assert.assertEquals(Maps.newHashMap(), table.properties());
   }
+
   @Test
   public void testCreatePartitionTable() throws TableNotExistException {
     sql("CREATE TABLE tl(id BIGINT, dt STRING) PARTITIONED BY(dt)");
@@ -240,23 +242,17 @@ public class TestFlinkCatalogTable extends FlinkCatalogTestBase {
 
   @Test
   public void testCreateVersionTable() throws TableNotExistException {
-    sql("CREATE TABLE tl(id BIGINT, dt STRING) PARTITIONED BY(dt) WITH ('version.format'='2')");
+    sql("CREATE TABLE tl(id BIGINT, dt STRING) PARTITIONED BY(dt) WITH ('%s'='%s')",
+        TableProperties.WRITE_FORMAT_VERSION, TableProperties.WRITE_FORMAT_VERSION_2);
 
     Table table = table("tl");
     Assert.assertEquals(
-            new Schema(
-                    Types.NestedField.optional(1, "id", Types.LongType.get()),
-                    Types.NestedField.optional(2, "dt", Types.StringType.get())).asStruct(),
-            table.schema().asStruct());
+        new Schema(
+            Types.NestedField.optional(1, "id", Types.LongType.get()),
+            Types.NestedField.optional(2, "dt", Types.StringType.get())).asStruct(),
+        table.schema().asStruct());
     Assert.assertEquals(PartitionSpec.builderFor(table.schema()).identity("dt").build(), table.spec());
-    Assert.assertEquals(Maps.newHashMap(), table.properties());
-
-    CatalogTable catalogTable = catalogTable("tl");
-    Assert.assertEquals(
-            TableSchema.builder().field("id", DataTypes.BIGINT()).field("dt", DataTypes.STRING()).build(),
-            catalogTable.getSchema());
-    Assert.assertEquals(Maps.newHashMap(), catalogTable.getOptions());
-    Assert.assertEquals(Collections.singletonList("dt"), catalogTable.getPartitionKeys());
+    Assert.assertEquals(TableProperties.WRITE_FORMAT_VERSION_2, table.properties().get(TableProperties.WRITE_FORMAT_VERSION));
   }
 
   @Test
