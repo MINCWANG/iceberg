@@ -252,7 +252,8 @@ public class TestFlinkCatalogTable extends FlinkCatalogTestBase {
             Types.NestedField.optional(2, "dt", Types.StringType.get())).asStruct(),
         table.schema().asStruct());
     Assert.assertEquals(PartitionSpec.builderFor(table.schema()).identity("dt").build(), table.spec());
-    Assert.assertEquals(TableProperties.WRITE_FORMAT_VERSION_2, table.properties().get(TableProperties.WRITE_FORMAT_VERSION));
+    Assert.assertEquals(TableProperties.WRITE_FORMAT_VERSION_2,
+            table.properties().get(TableProperties.WRITE_FORMAT_VERSION));
   }
 
   @Test
