@@ -42,6 +42,7 @@ abstract class BaseDeltaTaskWriter extends BaseTaskWriter<RowData> {
   private final Schema schema;
   private final Schema deleteSchema;
   private final RowDataWrapper wrapper;
+  private final boolean upsert;
 
   BaseDeltaTaskWriter(PartitionSpec spec,
                       FileFormat format,
@@ -52,11 +53,13 @@ abstract class BaseDeltaTaskWriter extends BaseTaskWriter<RowData> {
                       Map<String, String> properties,
                       Schema schema,
                       RowType flinkSchema,
-                      List<Integer> equalityFieldIds) {
+                      List<Integer> equalityFieldIds,
+                      boolean upsert) {
     super(spec, format, appenderFactory, fileFactory, io, targetFileSize, properties);
     this.schema = schema;
     this.deleteSchema = TypeUtil.select(schema, Sets.newHashSet(equalityFieldIds));
     this.wrapper = new RowDataWrapper(flinkSchema, schema.asStruct());
+    this.upsert = upsert;
   }
 
   abstract RowDataDeltaWriter route(RowData row);
@@ -72,7 +75,9 @@ abstract class BaseDeltaTaskWriter extends BaseTaskWriter<RowData> {
     switch (row.getRowKind()) {
       case INSERT:
       case UPDATE_AFTER:
-        writer.write(row);
+        if (upsert) {
+          writer.delete(row);
+        }
         break;
 
       case DELETE:

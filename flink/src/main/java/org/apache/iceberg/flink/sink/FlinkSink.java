@@ -126,6 +126,7 @@ public class FlinkSink {
     private Integer writeParallelism = null;
     private List<String> equalityFieldColumns = null;
     private String uidPrefix = null;
+    private boolean upsert = false;
 
     private Builder() {
     }
@@ -193,6 +194,20 @@ public class FlinkSink {
      */
     public Builder writeParallelism(int newWriteParallelism) {
       this.writeParallelism = newWriteParallelism;
+      return this;
+    }
+
+    /**
+     * All INSERT/UPDATE_AFTER events from input stream will be transformed to UPSERT events, which means it will
+     * DELETE the old records and then INSERT the new records. In partitioned table, the partition fields should be
+     * a subset of equality fields, otherwise the old row that located in partition-A could not be deleted by the
+     * new row that located in partition-B.
+     *
+     * @param enable indicate whether it should transform all INSERT/UPDATE_AFTER events to UPSERT.
+     * @return {@link Builder} to connect the iceberg table.
+     */
+    public Builder upsert(boolean enable) {
+      this.upsert = enable;
       return this;
     }
 
@@ -351,14 +366,15 @@ public class FlinkSink {
 
   static IcebergStreamWriter<RowData> createStreamWriter(Table table,
                                                          RowType flinkRowType,
-                                                         List<Integer> equalityFieldIds) {
+                                                         List<Integer> equalityFieldIds,
+                                                         Boolean upsert) {
     Map<String, String> props = table.properties();
     long targetFileSize = getTargetFileSizeBytes(props);
     FileFormat fileFormat = getFileFormat(props);
 
     TaskWriterFactory<RowData> taskWriterFactory = new RowDataTaskWriterFactory(table.schema(), flinkRowType,
         table.spec(), table.locationProvider(), table.io(), table.encryption(), targetFileSize, fileFormat, props,
-        equalityFieldIds);
+        equalityFieldIds,  upsert);
 
     return new IcebergStreamWriter<>(table.name(), taskWriterFactory);
   }

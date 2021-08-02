@@ -60,17 +60,17 @@ public class TestDeltaTaskWriter extends TableTestBase {
 
   private final FileFormat format;
 
+  public TestDeltaTaskWriter(String fileFormat) {
+    super(FORMAT_V2);
+    this.format = FileFormat.valueOf(fileFormat.toUpperCase(Locale.ENGLISH));
+  }
+
   @Parameterized.Parameters(name = "FileFormat = {0}")
   public static Object[][] parameters() {
     return new Object[][] {
         {"avro"},
         {"parquet"}
     };
-  }
-
-  public TestDeltaTaskWriter(String fileFormat) {
-    super(FORMAT_V2);
-    this.format = FileFormat.valueOf(fileFormat.toUpperCase(Locale.ENGLISH));
   }
 
   @Before
@@ -333,6 +333,6 @@ public class TestDeltaTaskWriter extends TableTestBase {
   private TaskWriterFactory<RowData> createTaskWriterFactory(List<Integer> equalityFieldIds) {
     return new RowDataTaskWriterFactory(table.schema(), FlinkSchemaUtil.convert(table.schema()),
         table.spec(), table.locationProvider(), table.io(), table.encryption(), 128 * 1024 * 1024,
-        format, table.properties(), equalityFieldIds);
+        format, table.properties(), equalityFieldIds, true);
   }
 }

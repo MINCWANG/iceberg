@@ -55,6 +55,15 @@ public class TestTaskWriters {
 
   @Rule
   public final TemporaryFolder tempFolder = new TemporaryFolder();
+  private final FileFormat format;
+  private final boolean partitioned;
+  private String path;
+  private Table table;
+
+  public TestTaskWriters(String format, boolean partitioned) {
+    this.format = FileFormat.valueOf(format.toUpperCase(Locale.ENGLISH));
+    this.partitioned = partitioned;
+  }
 
   @Parameterized.Parameters(name = "format = {0}, partitioned = {1}")
   public static Object[][] parameters() {
@@ -66,17 +75,6 @@ public class TestTaskWriters {
         {"parquet", true},
         {"parquet", false}
     };
-  }
-
-  private final FileFormat format;
-  private final boolean partitioned;
-
-  private String path;
-  private Table table;
-
-  public TestTaskWriters(String format, boolean partitioned) {
-    this.format = FileFormat.valueOf(format.toUpperCase(Locale.ENGLISH));
-    this.partitioned = partitioned;
   }
 
   @Before
@@ -239,7 +237,7 @@ public class TestTaskWriters {
     TaskWriterFactory<RowData> taskWriterFactory = new RowDataTaskWriterFactory(table.schema(),
         (RowType) SimpleDataUtil.FLINK_SCHEMA.toRowDataType().getLogicalType(), table.spec(),
         table.locationProvider(), table.io(), table.encryption(),
-        targetFileSize, format, table.properties(), null);
+        targetFileSize, format, table.properties(), null, true);
     taskWriterFactory.initialize(1, 1);
     return taskWriterFactory.create();
   }
