@@ -89,7 +89,7 @@ public class IcebergTableSink implements DynamicTableSink, SupportsPartitioning,
 
   @Override
   public DynamicTableSink copy() {
-    return new IcebergTableSink(this);
+    return new IcebergTableSink(this, this.properties);
   }
 
   @Override
